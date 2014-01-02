@@ -1,5 +1,3 @@
--- default desktop configuration for Fedora
-
 import System.Posix.Env (getEnv)
 import Data.Maybe (maybe)
 
@@ -7,34 +5,24 @@ import XMonad
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.UrgencyHook
-import XMonad.Util.Run (spawnPipe)
+import XMonad.Util.Run (spawnPipe, safeSpawn)
 import XMonad.Util.EZConfig (additionalKeys)
 import XMonad.Config.Desktop
 import XMonad.Config.Gnome
+import XMonad.Layout.Accordion
+import XMonad.Util.Scratchpad
+import XMonad.StackSet as W
+
+import XMonad.Layout.Tabbed
 
 import System.IO
 
-myModMask = mod4Mask
-
--- main = do
---   xmproc <- spawnPipe "xmobar"
---   spawn trayerString
---   let config = withUrgencyHook NoUrgencyHook desktopConfig
---   xmonad $ config { 
---     modMask              = myModMask
---     , terminal           = "urxvt"
---     , normalBorderColor  = "#cccccc"
---     , focusedBorderColor = "#cd8b00"
---     , borderWidth        = 2
---     , manageHook         = manageDocks <+> manageHook defaultConfig
---     , layoutHook         = myLayoutHook
---     , logHook            = xmobarLog xmproc
---     } `additionalKeys`
---     [ lockScreen ]
-
 main = do
+  spawnDaemons
   x <- xmobar myConfig
-  xmonad x
+  xmonad $ x
+
+myModMask = mod4Mask
 
 myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
   modMask              = myModMask
@@ -42,25 +30,44 @@ myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
   , normalBorderColor  = "#cccccc"
   , focusedBorderColor = "#cd8b00"
   , borderWidth        = 2
-  , manageHook         = manageDocks <+> manageHook defaultConfig
+  , manageHook         = myManageHook
   , layoutHook         = myLayoutHook
+  , XMonad.workspaces  = myWorkspaces
   } `additionalKeys` 
-           [ lockScreen ]
+           [ lockScreen 
+           , spawnIPython ]
     
 lockScreen = ((myModMask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock")
 
 myLayoutHook = avoidStruts $ layoutHook defaultConfig
+
+-- This looks like it might be useful for IMs
+--myLayoutHook = Accordion
 
 xmobarLog xmproc = dynamicLogWithPP xmobarPP {
   ppOutput = hPutStrLn xmproc
   , ppTitle = xmobarColor "green" "" . shorten 50
   , ppUrgent = xmobarColor "yellow" "red" . xmobarStrip
   }
-                   
-trayerString = "trayer --edge top --align right --SetDockType true "
-               ++ "--SetPartialStrut true --expand true --width 10 "
-               ++ "--transparent true --tint 0x000000 --height 12 &"
-                   
-desktop "gnome" = gnomeConfig
-desktop "xmonad-gnome" = gnomeConfig
-desktop _ = desktopConfig
+
+myWorkspaces = ["1-main",
+                "2-web",
+                "3-comms",
+                "4-music",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9-min"]
+               
+myManageHook = manageDocks <+> manageHook defaultConfig <+> spawnIPythonManageHook
+
+spawnDaemons = mapM_ spawnDaemon daemons
+
+spawnDaemon d = safeSpawn "start" [d]
+
+daemons = ["trayer-daemon", "nm-applet-daemon", "gnome-sound-applet-daemon"]
+
+spawnIPython = ((myModMask, xK_u), scratchpadSpawnAction myConfig)
+
+spawnIPythonManageHook = scratchpadManageHook (W.RationalRect 0.2 0.3 0.6 0.4)

@@ -1,4 +1,4 @@
-XMonad Desktop
+XMonad Config
 ==============
 
 This repository contains the configuration files necessary to
@@ -14,3 +14,16 @@ them automatically.
 | --------- | --------------- |
 | xmobarrc  | ~/.xmobarrc     |
 | xmonad/   | ~/.xmonad/      |
+| upstart/  | ~/.config/upstart |
+
+xmobar
+------
+
+xmobar is a 'minimalistic status bar' written in Haskell. Its layout
+is configured by the xmobarrc file, and is loaded up by
+xmonad/xmonad.hs.
+
+upstart
+-------
+
+We rely on Upstart to daemonize the tray utilities.
