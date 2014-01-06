@@ -7,18 +7,8 @@ Config { font = "-*-Fixed-Bold-R-Normal-*-13-*-*-*-*-*-*-*"
                     , Run Swap [] 10
                     , Run Date "%a %_d %b %l:%M" "date" 10
                     , Run StdinReader
-                    , Run Battery ["-t", "Batt: <left>% / <timeleft>",
-                                   "-L", "30",
-                                   "-H", "60",
-                                   "--high", "green",
-                                   "--normal", "yellow",
-                                   "--low", "red",
-                                   "--",
-                                   "-O", "<fc=green>On</fc> - ",
-                                   "-o", "<fc=green>Off</fc> - "
-                                  ] 10
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% }{ %cpu% | %memory% | %swap% | %battery%   <fc=#ee9a00>%date%</fc>"
+       , template = "%StdinReader% }{ %cpu% | %memory% | %swap%   <fc=#ee9a00>%date%</fc>"
        }

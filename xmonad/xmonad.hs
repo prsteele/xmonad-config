@@ -4,6 +4,7 @@ import Data.Maybe (maybe)
 import XMonad
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.UrgencyHook
 import XMonad.Util.Run (spawnPipe, safeSpawn)
 import XMonad.Util.EZConfig (additionalKeys)
@@ -14,6 +15,7 @@ import XMonad.Util.Scratchpad
 import XMonad.StackSet as W
 
 import XMonad.Layout.Tabbed
+import XMonad.Layout.NoBorders
 
 import System.IO
 
@@ -35,18 +37,20 @@ myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
   , XMonad.workspaces  = myWorkspaces
   } `additionalKeys` 
            [ lockScreen 
-           , spawnIPython ]
+           , spawnIPython 
+           , screenShot
+           , screenShotWindow ]
     
 lockScreen = ((myModMask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock")
 
-myLayoutHook = avoidStruts $ layoutHook defaultConfig
+myLayoutHook = avoidStruts $ smartBorders $ layoutHook defaultConfig
 
 -- This looks like it might be useful for IMs
 --myLayoutHook = Accordion
 
 xmobarLog xmproc = dynamicLogWithPP xmobarPP {
   ppOutput = hPutStrLn xmproc
-  , ppTitle = xmobarColor "green" "" . shorten 50
+  , ppTitle = xmobarColor "green" "" . shorten 100
   , ppUrgent = xmobarColor "yellow" "red" . xmobarStrip
   }
 
@@ -54,13 +58,17 @@ myWorkspaces = ["1-main",
                 "2-web",
                 "3-comms",
                 "4-music",
-                "5",
+                "5-games",
                 "6",
                 "7",
                 "8",
                 "9-min"]
                
-myManageHook = manageDocks <+> manageHook defaultConfig <+> spawnIPythonManageHook
+myManageHook = composeAll 
+               [ className =? "dota_linux" --> doFullFloat 
+               , className =? "dota_linux" --> doShift "5-games" 
+               ] 
+               <+> manageDocks <+> manageHook defaultConfig <+> spawnIPythonManageHook
 
 spawnDaemons = mapM_ spawnDaemon daemons
 
@@ -71,3 +79,14 @@ daemons = ["trayer-daemon", "nm-applet-daemon", "gnome-sound-applet-daemon"]
 spawnIPython = ((myModMask, xK_u), scratchpadSpawnAction myConfig)
 
 spawnIPythonManageHook = scratchpadManageHook (W.RationalRect 0.2 0.3 0.6 0.4)
+
+-- Take a screenshot when printscreen is pressed, then move the image
+-- to ~/Pictures/Screenshots.
+screenShot       = ((0, xK_Print), 
+                    spawn "scrot -e 'mv $f ~/Pictures/Screenshots/'")
+
+-- Take a screenshot of just the focused window when ctrl +
+-- printscreen is pressed, then move the image to
+-- ~/Pictures/Screenshots
+screenShotWindow = ((controlMask, xK_Print), 
+                    spawn "scrot -u -e 'mv $f ~/Pictures/Screenshots/'")
