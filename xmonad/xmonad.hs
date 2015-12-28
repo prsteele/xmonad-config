@@ -19,30 +19,7 @@ import XMonad.Util.EZConfig (additionalKeys)
 import XMonad.Util.Run (spawnPipe, safeSpawn)
 import XMonad.Util.Scratchpad
 
-myLayoutHook = avoidStruts $ layoutHook defaultConfig
-
-       
-lockScreen = ((myModMask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock")
-
--- Handle fullscreen events properly (e.g. making fullscreen flash work in Firefox)
-myEventHook = handleEventHook defaultConfig <+> fullscreenEventHook
-
-xmobarLog xmproc = dynamicLogWithPP xmobarPP {
-  ppOutput = hPutStrLn xmproc
-  , ppTitle = xmobarColor "green" "" . shorten 50
-  , ppUrgent = xmobarColor "yellow" "red" . xmobarStrip
-  }
-
-workspace1 = "1-main"
-workspace2 = "2-web"
-workspace3 = "3-comms"
-workspace4 = "4-music"
-workspace5 = "5-games"
-workspace6 = "6"
-workspace7 = "7"
-workspace8 = "8"
-workspace9 = "9-min"
-
+-- The various workspaces I use
 myWorkspaces = [ workspace1
                , workspace2
                , workspace3
@@ -54,24 +31,26 @@ myWorkspaces = [ workspace1
                , workspace9
                ]
 
--- myManageHook = composeAll [ fullscreenFix
---                           , manageDocks
---                           , manageHook defaultConfig
---                           , spawnIPythonManageHook
---                           ]
+workspace1 = "1-main"
+workspace2 = "2-web"
+workspace3 = "3-comms"
+workspace4 = "4-music"
+workspace5 = "5-games"
+workspace6 = "6"
+workspace7 = "7"
+workspace8 = "8"
+workspace9 = "9-min"
 
 -- Float programs to the correct workspaces
 myManageHook = (composeAll . concat $
-                 [ [resource   =? r --> doIgnore           | r <- myIgnores]
-                 , [className  =? c --> doShift workspace2 | c <- myWebs]
-                 , [className  =? c --> doShift workspace3 | c <- myComms]
-                 , [className  =? c --> doShift workspace4 | c <- myMusic]
-                 , [className  =? c --> doShift workspace5 | c <- myGames]
-                 , [fullscreenFix]
-                 , [manageDocks]
-                 --, [manageHook defaultConfig]
-                 , [spawnIPythonManageHook]
-                 ])
+                [ [resource   =? r --> doIgnore           | r <- myIgnores]
+                , [className  =? c --> doShift workspace2 | c <- myWebs]
+                , [className  =? c --> doShift workspace3 | c <- myComms]
+                , [className  =? c --> doShift workspace4 | c <- myMusic]
+                , [className  =? c --> doShift workspace5 | c <- myGames]
+                , [manageDocks]
+                , [spawnScratchpadManageHook]
+                ])
   where
     myIgnores = [ "xmobar"
                 , "trayer"
@@ -88,30 +67,31 @@ myManageHook = (composeAll . concat $
                 , "Heathstone"
                 ]
 
-fullscreenFix = isFullscreen    --> doF W.focusDown <+> doFullFloat
+    spawnScratchpadManageHook = scratchpadManageHook (W.RationalRect 0.2 0.3 0.6 0.4)
 
-myIgnores = ["trayer", "xmobar"]
+-- Handle dock programs such as xmobar
+myLayoutHook = avoidStruts $ layoutHook defaultConfig
 
--- fullscreenFix = composeOne [ isFullscreen -?> doFullFloat
---                            ]
+-- Handle fullscreen events properly (e.g. making fullscreen flash work in Firefox)
+myEventHook = handleEventHook defaultConfig <+> fullscreenEventHook
 
+-- Spawn useful daemons
 spawnDaemons = mapM_ spawnDaemon daemons
+  where
+    spawnDaemon d = safeSpawn "start" [d]
+    daemons = ["trayer-daemon", "nm-applet-daemon", "gnome-sound-applet-daemon"]
 
-spawnDaemon d = safeSpawn "start" [d]
+-- Bind mod-u to pull up a scratchpad window
+spawnScratchpad = ((myModMask, xK_u), scratchpadSpawnAction myConfig)
 
-daemons = ["trayer-daemon", "nm-applet-daemon", "gnome-sound-applet-daemon"]
 
-spawnIPython = ((myModMask, xK_u), scratchpadSpawnAction myConfig)
+-- Bind mod-z to lock the screen
+lockScreen = ((myModMask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock")
 
-spawnIPythonManageHook = scratchpadManageHook (W.RationalRect 0.2 0.3 0.6 0.4)
-
-main = do
-  spawnDaemons
-  x <- xmobar myConfig
-  xmonad $ x
-
+-- Use the super key as the mod key
 myModMask = mod4Mask
 
+-- Top-level configuration
 myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
   modMask              = myModMask
   , terminal           = "urxvt"
@@ -124,4 +104,9 @@ myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
   , XMonad.workspaces  = myWorkspaces
   } `additionalKeys` 
            [ lockScreen 
-           , spawnIPython ]
+           , spawnScratchpad ]
+
+main = do
+  spawnDaemons
+  x <- xmobar myConfig
+  xmonad $ x
