@@ -1,22 +1,12 @@
-import System.Posix.Env (getEnv)
-import Data.Maybe (maybe)
-
-import System.IO
 import XMonad
 import XMonad.Config.Desktop
-import XMonad.Config.Gnome
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
-import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.UrgencyHook
 import XMonad.Hooks.EwmhDesktops
-import XMonad.Layout.Accordion
-import XMonad.Layout.NoBorders
-import XMonad.Layout.PerWorkspace
-import XMonad.Layout.Tabbed
 import XMonad.StackSet as W
 import XMonad.Util.EZConfig (additionalKeys)
-import XMonad.Util.Run (spawnPipe, safeSpawn)
+import XMonad.Util.Run (safeSpawn)
 import XMonad.Util.Scratchpad
 
 -- The various workspaces I use
