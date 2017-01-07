@@ -10,11 +10,14 @@ in-repository names to filesystem names; I suggest symlinking the
 repository files to their filesystem locations so a `git pull` updates
 them automatically.
 
-| Repo file | Filesystem name |
-| --------- | --------------- |
-| xmobarrc  | ~/.xmobarrc     |
-| xmonad/   | ~/.xmonad/      |
-| upstart/  | ~/.config/upstart |
+| Repo file                   | Filesystem name                        |
+| --------------------------- | -------------------------------------- |
+| xmobarrc                    | ~/.xmobarrc                            |
+| xmonad/                     | ~/.xmonad/                             |
+| upstart/                    | ~/.config/upstart                      |
+| applications/xmonad.desktop | /usr/share/applications/xmonad.desktop |
+| xsessions/xmonad.desktop    | /usr/share/xsessions/xmonad.desktop    |
+| xmonad.start                | /usr/local/bin                         |
 
 xmobar
 ------
