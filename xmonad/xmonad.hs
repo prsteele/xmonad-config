@@ -1,18 +1,18 @@
+import Graphics.X11.ExtraTypes.XF86
+import System.IO
 import XMonad
 import XMonad.Config.Desktop
-import Graphics.X11.ExtraTypes.XF86
 import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.UrgencyHook
-import XMonad.Hooks.EwmhDesktops
+import XMonad.Layout.NoBorders
+import XMonad.Layout.Tabbed
 import XMonad.StackSet as W
 import XMonad.Util.EZConfig (additionalKeys)
 import XMonad.Util.Run (safeSpawn)
 import XMonad.Util.Scratchpad
-
-import XMonad.Layout.Tabbed
-import XMonad.Layout.NoBorders
 
 -- The various workspaces I use
 myWorkspaces = [ workspace1
@@ -112,8 +112,29 @@ myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
            , volumeDown
            , volumeToggle]
 
+-- xmobar configuration
+xmobarTitle = xmobarColor "#1589CE" "" . shorten 100
+xmobarCurrentWorkspace = xmobarColor "#1589CE" "" . wrap "[" "]"
+xmobarVisibleWorkspace = xmobarColor "#9B991F" ""
+xmobarHiddenWorkspace = xmobarColor "#9B991F" ""
+xmobarUrgent = xmobarColor "red" "yellow"
+
+myLogHook = xmobarPP {
+  ppTitle = xmobarTitle
+  , ppCurrent = xmobarCurrentWorkspace
+  , ppHidden = xmobarHiddenWorkspace
+  , ppVisible = xmobarVisibleWorkspace
+  , ppUrgent = xmobarUrgent
+  , ppSep = " : "
+  }
+
+toggleStrutsKey :: XConfig t -> (KeyMask, KeySym)
+toggleStrutsKey XConfig{modMask=modm} = (modm, xK_b)
+
+myStatusBar = statusBar "xmobar" myLogHook toggleStrutsKey myConfig
+
 main = do
   spawnDaemons
-  x <- xmobar myConfig
-  xmonad $ x
+  myStatusBar >>= xmonad
+
 

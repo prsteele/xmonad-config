@@ -1,8 +1,9 @@
-Config { font = "-*-Fixed-Bold-R-Normal-*-13-*-*-*-*-*-*-*"
-       , bgColor = "black"
-       , fgColor = "grey"
+Config { font = "xft:mononoki:size=10:antialias=true"
+       , bgColor = "#45484C"
+       , fgColor = "#9B991F"
        , position = TopW L 90
-       , commands = [ Run Cpu ["-L","3","-H","50","--normal","green","--high","red"] 10
+       , lowerOnStart = True
+       , commands = [ Run Cpu ["-L","3","-H","50","--high","#D62B2F"] 10
                     , Run Memory ["-t","Mem: <usedratio>%"] 10
                     , Run Swap [] 10
                     , Run Date "%a %_d %b %l:%M" "date" 10
@@ -10,5 +11,5 @@ Config { font = "-*-Fixed-Bold-R-Normal-*-13-*-*-*-*-*-*-*"
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% }{ %cpu% | %memory% | %swap%   <fc=#ee9a00>%date%</fc>"
+       , template = "%StdinReader% }{ %cpu%  %memory%  %swap%   <fc=#1589CE>%date%</fc>"
        }
