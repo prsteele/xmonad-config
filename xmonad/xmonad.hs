@@ -14,6 +14,9 @@ import XMonad.Util.EZConfig (additionalKeys)
 import XMonad.Util.Run (safeSpawn)
 import XMonad.Util.Scratchpad
 
+-- Use the super key as the mod key
+myModMask = mod4Mask
+
 -- The various workspaces I use
 myWorkspaces = [ workspace1
                , workspace2
@@ -64,11 +67,13 @@ myManageHook = (composeAll . concat $
 
     spawnScratchpadManageHook = scratchpadManageHook (W.RationalRect 0.2 0.3 0.6 0.4)
 
--- Handle dock programs such as xmobar
-myLayoutHook = avoidStruts $ layoutHook defaultConfig
+-- Layouts
+tall = Tall 1 (3 / 100) (1 / 2)
+myLayoutHook = avoidStruts (tall ||| Mirror tall ||| Full ||| simpleTabbed)
 
--- Handle fullscreen events properly (e.g. making fullscreen flash work in Firefox)
-myEventHook = handleEventHook defaultConfig <+> fullscreenEventHook
+-- Handle fullscreen events properly (e.g. making fullscreen flash
+-- work in Firefox)
+myEventHook = handleEventHook def <+> fullscreenEventHook
 
 -- Spawn useful daemons
 spawnDaemons = mapM_ spawnDaemon daemons
@@ -76,23 +81,19 @@ spawnDaemons = mapM_ spawnDaemon daemons
     spawnDaemon d = safeSpawn "start" [d]
     daemons = ["trayer-daemon", "nm-applet-daemon"]
 
--- Bind mod-u to pull up a scratchpad window
-spawnScratchpad = ((myModMask, xK_u), scratchpadSpawnAction myConfig)
-
--- Bind mod-z to lock the screen
-lockScreen = ((myModMask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock")
-
--- Control the volume
-volumeUpAction     = "pactl set-sink-volume 1 \"+1%\""
-volumeDownAction   = "pactl set-sink-volume 1 \"-1%\""
-volumeToggleAction = "pactl set-sink-mute 1 toggle"
-
-volumeUp     = ((0, xF86XK_AudioRaiseVolume), spawn volumeUpAction)
-volumeDown   = ((0, xF86XK_AudioLowerVolume), spawn volumeDownAction)
-volumeToggle = ((0, xF86XK_AudioMute),        spawn volumeToggleAction)
-
--- Use the super key as the mod key
-myModMask = mod4Mask
+-- Keybindings
+myKeys = 
+  [ -- Pull up a floating terminal window
+    ((myModMask, xK_u), scratchpadSpawnAction myConfig)
+    -- Lock the screen
+  , ((myModMask .|. shiftMask, xK_z), spawn "slock")
+    -- Raise the volumne
+  , ((0, xF86XK_AudioRaiseVolume), spawn "pactl set-sink-volume 1 \"+1%\"")
+    -- Lower the volume
+  , ((0, xF86XK_AudioLowerVolume), spawn "pactl set-sink-volume 1 \"-1%\"")
+    -- Toggle the mute status
+  , ((0, xF86XK_AudioMute),        spawn "pactl set-sink-mute 1 toggle")
+  ]
 
 -- Top-level configuration
 myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
@@ -105,12 +106,7 @@ myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
   , layoutHook         = myLayoutHook
   , handleEventHook    = myEventHook
   , XMonad.workspaces  = myWorkspaces
-  } `additionalKeys` 
-           [ lockScreen 
-           , spawnScratchpad
-           , volumeUp
-           , volumeDown
-           , volumeToggle]
+  } `additionalKeys` myKeys
 
 -- xmobar configuration
 xmobarTitle = xmobarColor "#1589CE" "" . shorten 100
