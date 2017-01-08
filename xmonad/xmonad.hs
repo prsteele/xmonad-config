@@ -1,5 +1,6 @@
 import XMonad
 import XMonad.Config.Desktop
+import Graphics.X11.ExtraTypes.XF86
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
@@ -73,14 +74,22 @@ myEventHook = handleEventHook defaultConfig <+> fullscreenEventHook
 spawnDaemons = mapM_ spawnDaemon daemons
   where
     spawnDaemon d = safeSpawn "start" [d]
-    daemons = ["trayer-daemon", "nm-applet-daemon", "gnome-sound-applet-daemon"]
+    daemons = ["trayer-daemon", "nm-applet-daemon"]
 
 -- Bind mod-u to pull up a scratchpad window
 spawnScratchpad = ((myModMask, xK_u), scratchpadSpawnAction myConfig)
 
-
 -- Bind mod-z to lock the screen
 lockScreen = ((myModMask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock")
+
+-- Control the volume
+volumeUpAction     = "pactl set-sink-volume 1 \"+1%\""
+volumeDownAction   = "pactl set-sink-volume 1 \"-1%\""
+volumeToggleAction = "pactl set-sink-mute 1 toggle"
+
+volumeUp     = ((0, xF86XK_AudioRaiseVolume), spawn volumeUpAction)
+volumeDown   = ((0, xF86XK_AudioLowerVolume), spawn volumeDownAction)
+volumeToggle = ((0, xF86XK_AudioMute),        spawn volumeToggleAction)
 
 -- Use the super key as the mod key
 myModMask = mod4Mask
@@ -98,7 +107,10 @@ myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
   , XMonad.workspaces  = myWorkspaces
   } `additionalKeys` 
            [ lockScreen 
-           , spawnScratchpad ]
+           , spawnScratchpad
+           , volumeUp
+           , volumeDown
+           , volumeToggle]
 
 main = do
   spawnDaemons
