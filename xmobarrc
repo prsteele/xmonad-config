@@ -1,6 +1,6 @@
 Config { font = "xft:mononoki:size=10:antialias=true"
-       , bgColor = "#002b36"
-       , fgColor = "#657b83"
+       , bgColor = "#073642"
+       , fgColor = "#839496"
        , position = TopW L 90
        , lowerOnStart = True
        , commands = [ Run Cpu ["-L","3","-H","50","--high","#657b83"] 10
