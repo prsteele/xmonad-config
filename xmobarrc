@@ -1,24 +1,15 @@
-Config { font = "-*-Fixed-Bold-R-Normal-*-13-*-*-*-*-*-*-*"
-       , bgColor = "black"
-       , fgColor = "grey"
+Config { font = "xft:mononoki:size=10:antialias=true"
+       , bgColor = "#073642"
+       , fgColor = "#839496"
        , position = TopW L 90
-       , commands = [ Run Cpu ["-L","3","-H","50","--normal","green","--high","red"] 10
+       , lowerOnStart = True
+       , commands = [ Run Cpu ["-L","3","-H","50","--high","#657b83"] 10
                     , Run Memory ["-t","Mem: <usedratio>%"] 10
                     , Run Swap [] 10
                     , Run Date "%a %_d %b %l:%M" "date" 10
                     , Run StdinReader
-                    , Run Battery ["-t", "Batt: <left>% / <timeleft>",
-                                   "-L", "30",
-                                   "-H", "60",
-                                   "--high", "green",
-                                   "--normal", "yellow",
-                                   "--low", "red",
-                                   "--",
-                                   "-O", "<fc=green>On</fc> - ",
-                                   "-o", "<fc=green>Off</fc> - "
-                                  ] 10
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%StdinReader% }{ %cpu% | %memory% | %swap% | %battery%   <fc=#ee9a00>%date%</fc>"
+       , template = "%StdinReader% }{ %cpu%  %memory%  %swap%   <fc=#268bd2>%date%</fc>"
        }

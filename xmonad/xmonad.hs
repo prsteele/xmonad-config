@@ -1,13 +1,21 @@
+import Graphics.X11.ExtraTypes.XF86
+import System.IO
 import XMonad
 import XMonad.Config.Desktop
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.UrgencyHook
+import XMonad.Layout.NoBorders
+import XMonad.Layout.Tabbed
 import XMonad.StackSet as W
 import XMonad.Util.EZConfig (additionalKeys)
 import XMonad.Util.Run (safeSpawn)
 import XMonad.Util.Scratchpad
+
+-- Use the super key as the mod key
+myModMask = mod4Mask
 
 -- The various workspaces I use
 myWorkspaces = [ workspace1
@@ -59,26 +67,33 @@ myManageHook = (composeAll . concat $
 
     spawnScratchpadManageHook = scratchpadManageHook (W.RationalRect 0.2 0.3 0.6 0.4)
 
--- Handle dock programs such as xmobar
-myLayoutHook = avoidStruts $ layoutHook defaultConfig
+-- Layouts
+tall = Tall 1 (3 / 100) (1 / 2)
+myLayoutHook = avoidStruts (tall ||| Mirror tall ||| Full ||| simpleTabbed)
 
--- Handle fullscreen events properly (e.g. making fullscreen flash work in Firefox)
-myEventHook = handleEventHook defaultConfig <+> fullscreenEventHook
+-- Handle fullscreen events properly (e.g. making fullscreen flash
+-- work in Firefox)
+myEventHook = handleEventHook def <+> fullscreenEventHook
 
 -- Spawn useful daemons
 spawnDaemons = mapM_ spawnDaemon daemons
   where
     spawnDaemon d = safeSpawn "start" [d]
-    daemons = ["trayer-daemon", "nm-applet-daemon", "gnome-sound-applet-daemon"]
+    daemons = ["trayer-daemon", "nm-applet-daemon"]
 
--- Bind mod-u to pull up a scratchpad window
-spawnScratchpad = ((myModMask, xK_u), scratchpadSpawnAction myConfig)
-
--- Bind mod-z to lock the screen
-lockScreen = ((myModMask .|. shiftMask, xK_l), spawn "slock")
-
--- Use the super key as the mod key
-myModMask = mod4Mask
+-- Keybindings
+myKeys = 
+  [ -- Pull up a floating terminal window
+    ((myModMask, xK_u), scratchpadSpawnAction myConfig)
+    -- Lock the screen
+  , ((myModMask .|. shiftMask, xK_z), spawn "slock")
+    -- Raise the volumne
+  , ((0, xF86XK_AudioRaiseVolume), spawn "pactl set-sink-volume 1 \"+1%\"")
+    -- Lower the volume
+  , ((0, xF86XK_AudioLowerVolume), spawn "pactl set-sink-volume 1 \"-1%\"")
+    -- Toggle the mute status
+  , ((0, xF86XK_AudioMute),        spawn "pactl set-sink-mute 1 toggle")
+  ]
 
 -- Top-level configuration
 myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
@@ -91,11 +106,49 @@ myConfig = withUrgencyHook NoUrgencyHook desktopConfig {
   , layoutHook         = myLayoutHook
   , handleEventHook    = myEventHook
   , XMonad.workspaces  = myWorkspaces
-  } `additionalKeys` 
-           [ lockScreen 
-           , spawnScratchpad ]
+  } `additionalKeys` myKeys
+
+-- Solarized colors
+base03  = "#002b36"
+base02  = "#073642"
+base01  = "#586e75"
+base00  = "#657b83"
+base0   = "#839496"
+base1   = "#93a1a1"
+base2   = "#eee8d5"
+base3   = "#fdf6e3"
+yellow  = "#b58900"
+orange  = "#cb4b16"
+red     = "#dc322f"
+magenta = "#d33682"
+violet  = "#6c71c4"
+blue    = "#268bd2"
+cyan    = "#2aa198"
+green   = "#859900"
+
+-- xmobar configuration
+xmobarTitle = xmobarColor blue "" . shorten 100
+xmobarCurrentWorkspace = xmobarColor blue "" . wrap "[" "]"
+xmobarVisibleWorkspace = xmobarColor yellow ""
+xmobarHiddenWorkspace = xmobarColor yellow ""
+xmobarUrgent = xmobarColor red ""
+
+myLogHook = xmobarPP {
+  ppTitle = xmobarTitle
+  , ppCurrent = xmobarCurrentWorkspace
+  , ppHidden = xmobarHiddenWorkspace
+  , ppVisible = xmobarVisibleWorkspace
+  , ppUrgent = xmobarUrgent
+  , ppSep = " : "
+  }
+
+toggleStrutsKey :: XConfig t -> (KeyMask, KeySym)
+toggleStrutsKey XConfig{modMask=modm} = (modm, xK_b)
+
+myStatusBar = statusBar "xmobar" myLogHook toggleStrutsKey myConfig
 
 main = do
   spawnDaemons
-  x <- xmobar myConfig
-  xmonad $ x
+  myStatusBar >>= xmonad
+
+

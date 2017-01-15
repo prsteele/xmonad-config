@@ -29,4 +29,14 @@ xmonad/xmonad.hs.
 upstart
 -------
 
-We rely on Upstart to daemonize the tray utilities.
+We rely on Upstart to daemonize the tray utilities. IMPORTANT: You
+need to ensure that the line `xmonad` is present (and not commented
+out) in `/etc/upstart-xsessions` to allow Upstart to manage the
+session.
+
+Dependencies
+------------
+
+This configuration assumes you have `scrot` installed to take
+screenshots, and assumes you have created the `~/Pictures/Screenshots`
+directory.
