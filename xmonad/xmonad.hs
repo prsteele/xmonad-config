@@ -1,9 +1,9 @@
 import XMonad
 import XMonad.Config.Desktop
 import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.UrgencyHook
-import XMonad.Hooks.EwmhDesktops
 import XMonad.StackSet as W
 import XMonad.Util.EZConfig (additionalKeys)
 import XMonad.Util.Run (safeSpawn)
@@ -74,9 +74,8 @@ spawnDaemons = mapM_ spawnDaemon daemons
 -- Bind mod-u to pull up a scratchpad window
 spawnScratchpad = ((myModMask, xK_u), scratchpadSpawnAction myConfig)
 
-
 -- Bind mod-z to lock the screen
-lockScreen = ((myModMask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock")
+lockScreen = ((myModMask .|. shiftMask, xK_l), spawn "slock")
 
 -- Use the super key as the mod key
 myModMask = mod4Mask
