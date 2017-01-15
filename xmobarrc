@@ -1,4 +1,4 @@
-Config { font = "xft:mononoki:size=14:antialias=true"
+Config { font = "xft:mononoki:size=12:antialias=true"
        , bgColor = "#073642"
        , fgColor = "#839496"
        , position = TopW L 90
